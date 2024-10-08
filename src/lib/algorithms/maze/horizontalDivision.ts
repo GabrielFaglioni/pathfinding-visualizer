@@ -23,21 +23,22 @@ export async function horizontalDivision({
   width: number;
   setIsDisabled: (disabled: boolean) => void;
   speed: SpeedType;
-}) {
-  const makeWallAt = row + getRandInt(0, height - 1) * 2 + 1; // Determine the row to place the wall
-  const makePassageAt = col + getRandInt(0, width) * 2; // Determine the column to leave a passage
+}): Promise<void> {
+  const makeWallAtRow = row + getRandInt(0, height - 1) * 2 + 1;
+  const makePassageAtCol = col + getRandInt(0, width) * 2;
+
+  const animationSpeed = 10 * SPEEDS.find((s): boolean => s.value === speed)!.value - 5;
 
   for (let i = 0; i < 2 * width - 1; i += 1) {
-    // Create the horizontal wall
-    if (makePassageAt !== col + i) {
-      if (
-        !isEqual(grid[makeWallAt][col + i], startTile) && // Check if the current tile is not the start tile
-        !isEqual(grid[makeWallAt][col + i], endTile) // Check if the current tile is not the end tile
-      ) {
-        grid[makeWallAt][col + i].isWall = true; // Set the current tile as a wall
+    //. Create the horizontal wall
+    if (makePassageAtCol !== col + i) {
+      const isStartTile = isEqual(grid[makeWallAtRow][col + i], startTile);
+      const isEndTile = isEqual(grid[makeWallAtRow][col + i], endTile);
+      if (!isStartTile && !isEndTile) {
+        grid[makeWallAtRow][col + i].isWall = true; //. Set the current tile as a wall
 
-        document.getElementById(`${makeWallAt}-${col + i}`)!.className = `${WALL_TILE_STYLE} animate-wall`; // Add wall style and animation
-        await sleep(10 * SPEEDS.find((s) => s.value === speed)!.value - 5); // Wait for animation
+        document.getElementById(`${makeWallAtRow}-${col + i}`)!.className = `${WALL_TILE_STYLE} animate-wall`; // Add wall style and animation
+        await sleep(animationSpeed);
       }
     }
   }
@@ -49,18 +50,19 @@ export async function horizontalDivision({
     endTile,
     row,
     col,
-    height: (makeWallAt - row + 1) / 2,
+    height: (makeWallAtRow - row + 1) / 2,
     width,
     setIsDisabled,
     speed
   });
+
   await recursiveDivision({
     grid,
     startTile,
     endTile,
-    row: makeWallAt + 1,
+    row: makeWallAtRow + 1,
     col,
-    height: height - (makeWallAt - row + 1) / 2,
+    height: height - (makeWallAtRow - row + 1) / 2,
     width,
     setIsDisabled,
     speed

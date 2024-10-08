@@ -22,7 +22,7 @@ export default async function recursiveDivision({
   width: number;
   setIsDisabled: (disabled: boolean) => void;
   speed: SpeedType;
-}) {
+}): Promise<void> {
   if (height <= 1 || width <= 1) {
     return; // Base case: if the section is too small, stop recursion
   }
