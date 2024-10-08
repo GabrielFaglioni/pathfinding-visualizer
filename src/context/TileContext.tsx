@@ -2,7 +2,7 @@ import { ReactNode, createContext, useState } from "react";
 import { TileType } from "../utils/types";
 import { END_TILE_CONFIGURATION, START_TILE_CONFIGURATION } from "../utils/constants";
 
-interface TileContextInterface {
+export interface TileContextInterface {
   startTile: TileType;
   setStartTile: (startTile: TileType) => void;
   endTile: TileType;

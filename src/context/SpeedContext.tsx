@@ -1,7 +1,7 @@
 import { createContext, useState } from "react";
 import { SpeedType } from "../utils/types";
 
-interface SpeedContextInterface {
+export interface SpeedContextInterface {
   speed: SpeedType;
   setSpeed: (speed: SpeedType) => void;
 }
