@@ -2,10 +2,13 @@ import { MutableRefObject, useState } from "react";
 import { usePathfinding } from "../hooks/usePathfinding";
 import { useSpeed } from "../hooks/useSpeed";
 import { useTile } from "../hooks/useTile";
-import { MAZES, PATHFINDING_ALGORITHMS, SPEEDS } from "../utils/constants";
+import { animatePath } from "../utils/animatePath";
+import { EXTENDED_SLEEP_TIME, MAZES, PATHFINDING_ALGORITHMS, SLEEP_TIME, SPEEDS } from "../utils/constants";
 import { resetGrid } from "../utils/helpers";
 import { runMazeAlgorithm } from "../utils/runMazeAlgorithm";
+import { runPathfindingAlgorithm } from "../utils/runPathFindingAlgorithm";
 import { AlgorithmType, MazeType, SpeedType } from "../utils/types";
+import { PlayButton } from "./PlayButton";
 import { Select } from "./Select";
 
 export default function Nav({
@@ -15,7 +18,8 @@ export default function Nav({
 }): JSX.Element {
   const [isDisabled, setIsDisabled] = useState(false);
   console.log("isVisualizationRunningRef: ", isVisualizationRunningRef);
-  const { maze, setMaze, algorithm, setAlgorithm, grid } = usePathfinding();
+  const { maze, setMaze, grid, setGrid, isGraphVisualized, setIsGraphVisualized, algorithm, setAlgorithm } =
+    usePathfinding();
   const { startTile, endTile } = useTile();
   const { speed, setSpeed } = useSpeed();
 
@@ -36,7 +40,35 @@ export default function Nav({
       setIsDisabled,
       speed
     });
+    const newGrid = grid.slice();
+    setGrid(newGrid);
     setIsDisabled(false);
+  };
+
+  const handlerRunVisualizer = (): void => {
+    if (isGraphVisualized) {
+      setIsGraphVisualized(false);
+      resetGrid({ grid: grid.slice(), startTile, endTile });
+      return;
+    }
+
+    const { traversedTiles, path } = runPathfindingAlgorithm({
+      algorithm,
+      grid,
+      startTile,
+      endTile
+    });
+
+    animatePath(traversedTiles, path, startTile, endTile, speed);
+    setIsDisabled(true);
+    isVisualizationRunningRef.current = true;
+    setTimeout((): void => {
+      const newGrid = grid.slice();
+      setGrid(newGrid);
+      setIsGraphVisualized(true);
+      setIsDisabled(false);
+      isVisualizationRunningRef.current = false;
+    }, SLEEP_TIME * (traversedTiles.length + SLEEP_TIME * 2) + EXTENDED_SLEEP_TIME * (path.length + 60) * SPEEDS.find((s) => s.value === speed)!.value);
   };
 
   return (
@@ -70,6 +102,12 @@ export default function Nav({
             onChange={(e): void => {
               setSpeed(parseInt(e.target.value) as SpeedType);
             }}
+          />
+
+          <PlayButton
+            isDisabled={isDisabled}
+            isGraphVisualized={isGraphVisualized}
+            handlerRunVisualizer={handlerRunVisualizer}
           />
         </div>
       </div>
